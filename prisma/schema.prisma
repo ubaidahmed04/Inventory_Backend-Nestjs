@@ -1,0 +1,60 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  fname     String
+  lname     String
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+}
+
+model Region {
+  id         Int      @id @default(autoincrement())
+  regionName String   @db.VarChar(100)
+  status     Int      @default(0)
+  createdBy  String?  @db.VarChar(80)
+  editBy     String?  @db.VarChar(80)
+  branches   Branch[]  
+  
+  @@map("region")
+}
+
+model Branch {
+  id         Int      @id @default(autoincrement())
+  branchName String   @db.VarChar(100)
+  regionId   Int
+  address    String?  @db.VarChar(200)
+  status     Int      @default(0)
+  createdBy  String?  @db.VarChar(80)
+  editBy     String?  @db.VarChar(80)
+
+  region     Region   @relation(fields: [regionId], references: [id])
+
+  @@map("branch")
+}
+
+model Vendor {
+  vendorid  Int      @id @default(autoincrement())
+  company   String   @db.VarChar(150)
+  contact   String   @db.VarChar(100)
+  phone     String   @db.VarChar(20)
+  email     String   @db.VarChar(150)
+  address   String   @db.VarChar(255)
+  status    Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("vendors")
+}

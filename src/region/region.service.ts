@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { regionDto } from './dto/region.dto';
 
@@ -13,8 +13,12 @@ export class RegionService {
         return this.prisma.region.findMany();
     }
 
-    findOne(id: number) {
-        return this.prisma.region.findUnique({ where: { id } });
+    async findOne(id: number) {
+        const region = await  this.prisma.region.findUnique({ where: { id } });
+        if(!region){
+            throw new NotFoundException("Region Not Found") 
+        }
+        return region
     }
 
     update(id: number, data: any) {

@@ -22,7 +22,7 @@ export class VendorController {
     }
     @Delete(':id')
     delete(@Param('id') id : string ){
-        this.vendorService.delete(Number(id))
+        return this.vendorService.delete(Number(id))
     }
 
 }

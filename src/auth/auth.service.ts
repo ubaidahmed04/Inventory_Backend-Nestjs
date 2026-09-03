@@ -1,8 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { RegisterDto } from './dto/registerUser.dto';
 import { LoginDto } from './dto/loginUser.dto';
-import bcrypt from "bcrypt"
+import * as bcrypt from "bcrypt"
 import { JwtService } from '@nestjs/jwt';
 @Injectable()
 export class AuthService {
@@ -19,11 +19,10 @@ export class AuthService {
       registerUserDto.email
     )
     if (existingUser) {
-      throw new BadRequestException('Email already exists')
+      throw new ConflictException('Email already exists')
     }
     // 2. Hash password
     const hashPass = await bcrypt.hash(registerUserDto.password, 10)
-    console.log(hashPass)
     // 3. Save user in DB
     const user = await this.userService.createUser({
       ...registerUserDto,
@@ -45,23 +44,23 @@ export class AuthService {
 
   // login user 
   async loginUser(loginUserDto: LoginDto) {
-    console.log("login Dto", loginUserDto)
+    // console.log("login Dto", loginUserDto)
     const user = await this.userService.findByEmail(loginUserDto.email)
 
     if (!user) {
-      throw new BadRequestException('Invalid email or password')
+      throw new UnauthorizedException('Invalid credentials')
     }
     const isMatch = await bcrypt.compare(
       loginUserDto.password,
       user.password,
     )
      if (!isMatch) {
-      throw new BadRequestException('Invalid email or password')
+      throw new UnauthorizedException('Invalid credentials')
     }
     const token = this.generateToken(user.id, user.email);
     return {
       message: 'Login successful',
-      status: 200 , 
+      status: true , 
       user: {
         id: user.id,
         fname: user.fname,

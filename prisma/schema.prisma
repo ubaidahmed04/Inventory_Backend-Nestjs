@@ -33,7 +33,7 @@ model Region {
 
 model Branch {
   id         Int      @id @default(autoincrement())
-  branchName String   @db.VarChar(100)
+  branchName String   @unique    //  @unique add kiya
   regionId   Int
   address    String?  @db.VarChar(200)
   status     Int      @default(0)

@@ -1,25 +1,41 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { BranchDto } from './dto/branch.dto';
+import { UpdateBranchDto } from './dto/update-branch.dto';
+import { Branch } from '@prisma/client';
 
 @Injectable()
 export class BranchService {
-    constructor(private readonly prisma : PrismaService){}
-    create(data : BranchDto){
-        return this.prisma.branch.create({data})
+    constructor(
+        private readonly prisma: PrismaService
+    ) { }
+    async create(data: BranchDto): Promise<Branch> {
+        // const existingBranch = await this.prisma.branch.findUnique({
+        //     where: { branchName: data.branchName },
+        // });
+        // if (existingBranch) {
+        //     throw new ConflictException('This Branch already exists in this region');
+        // }
+
+        return this.prisma.branch.create({ data });
     }
-    findAll(){
+    findAll() {
         return this.prisma.branch.findMany()
     }
-    findOne(id: number){
-        return this.prisma.branch.findUnique({
-            where: { id }
-        })
+    async findOne(id: number): Promise<Branch> {
+        const branch = await this.prisma.branch.findUnique({ where: { id } });
+        if (!branch) {
+            throw new NotFoundException(`Branch  ${id} not found`);
+        }
+        return branch;
     }
-    updateBranch(id: number, data : any){
-        return this.prisma.branch.update({ where : {id} , data })
+    async updateBranch(id: number, data: UpdateBranchDto): Promise<Branch> {
+        await this.findOne(id); // existence check — 404 agar na mile
+        return this.prisma.branch.update({ where: { id }, data });
     }
-    remove(id: number){
-        return this.prisma.branch.delete({ where : { id } })
+
+    async remove(id: number): Promise<Branch> {
+        await this.findOne(id); // existence check — 404 agar na mile
+        return this.prisma.branch.delete({ where: { id } });
     }
 }
